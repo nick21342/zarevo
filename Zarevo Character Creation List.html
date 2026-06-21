@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>BARRAGEUR 1990 // TERMINAL v9.1</title>
+<style>
+    :root { 
+        --bg: #080808; 
+        --text: #3d8c3d; 
+        --border: 1px solid #224422; 
+        --fsize: 15px; 
+    }
+    
+    /* Базовые стили страницы */
+    body { 
+        background: var(--bg); 
+        color: var(--text); 
+        font-family: 'Courier New', monospace; 
+        padding: 10px; 
+        font-size: var(--fsize); 
+    }
+    
+    input, textarea, select, button, label, span, strong, b { 
+        font-family: 'Courier New', monospace; 
+        font-size: var(--fsize) !important; 
+    }
+    
+    /* Кнопки */
+    button { 
+        background: #000; 
+        color: var(--text); 
+        border: var(--border); 
+        padding: 5px 15px; 
+        cursor: pointer; 
+        text-transform: uppercase; 
+    }
+    button:hover { 
+        background: #0a1a0a; 
+        border-color: var(--text); 
+    }
+
+    /* Сетка и секции */
+    .grid-main { 
+        display: grid; 
+        grid-template-columns: 420px 1fr 420px; 
+        gap: 15px; 
+        margin-bottom: 70px; 
+    }
+    .section { 
+        border: var(--border); 
+        padding: 8px; 
+        margin-bottom: 8px; 
+        background: rgba(0, 10, 0, 0.3); 
+    }
+    .section-title { 
+        background: var(--text); 
+        color: var(--bg); 
+        font-weight: bold; 
+        padding: 4px 8px; 
+        display: block; 
+        margin-bottom: 8px; 
+        text-transform: uppercase; 
+    }
+    
+    /* Поля ввода */
+    input, textarea, select { 
+        background: #000; 
+        border: var(--border); 
+        color: var(--text); 
+        width: 100%; 
+        outline: none; 
+        margin-bottom: 3px; 
+        padding: 6px; 
+        box-sizing: border-box; 
+    }
+    
+    /* Фикс: запрещаем полям ломать сетку, расширяясь вправо */
+    textarea { 
+        resize: vertical !important; 
+        min-height: 40px; 
+    }
+    
+    input[type="number"] { 
+        width: 55px; 
+        text-align: center; 
+    }
+    
+    /* Блоки биографии */
+    .bio-block { 
+        margin-bottom: 12px; 
+        border-bottom: 1px solid #112211; 
+        padding-bottom: 8px; 
+    }
+    .bio-label { 
+        opacity: 0.8; 
+        text-transform: uppercase; 
+        margin-bottom: 4px; 
+        display: block; 
+        font-size: 13px !important; 
+        margin-top: 8px;
+    }
+
+    /* Навыки */
+    .skill-group { margin-bottom: 10px; }
+    .skill-row { 
+        display: grid; 
+        grid-template-columns: 1fr 55px 120px; 
+        gap: 5px; 
+        align-items: center; 
+        margin-bottom: 4px; 
+    }
+    .skill-sub { 
+        color: #3d8c3d; 
+        font-size: 15px !important; 
+        margin-left: 5px; 
+        display: grid; 
+        grid-template-columns: 20px 1fr 60px; 
+        align-items: center; 
+        margin-bottom: 4px; 
+    }
+    
+    /* Чекбоксы культур */
+    .cult-chk { 
+        appearance: none; 
+        -webkit-appearance: none; 
+        width: 16px; 
+        height: 16px; 
+        background-color: #000; 
+        border: 1px solid var(--text); 
+        cursor: pointer; 
+        margin: 0; 
+    }
+    .cult-chk:checked { background-color: var(--text); }
+    .cult-val { font-weight: bold; color: #fff; text-align: right; }
+    
+    /* Нижняя панель */
+    .pool-bar { 
+        position: fixed; 
+        bottom: 0; 
+        left: 0; 
+        width: 100%; 
+        background: #0a0a0a; 
+        border-top: 2px solid var(--text); 
+        padding: 10px; 
+        display: flex; 
+        gap: 20px; 
+        justify-content: center; 
+        z-index: 1000; 
+        font-weight: bold; 
+    }
+    
+		.limb-box { 
+		margin-bottom: 20px; 
+		border: var(--border); 
+		padding: 10px; 
+		background: rgba(0, 20, 0, 0.2);
+	}
+
+	.limb-sectors-list {
+		display: flex;
+		flex-wrap: wrap; /* Чекбоксы в ряд, если место есть */
+		gap: 10px;
+		margin: 8px 0;
+	}
+
+	.limb-chk-row {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 13px;
+	}
+
+	.limb-footer-inputs {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		margin-top: 10px;
+	}
+
+	/* Растягивающееся поле */
+	.l-feat-single {
+		resize: vertical !important; /* Разрешаем тянуть вниз за уголок */
+		min-height: 50px;
+		width: 100%;
+		background: #000;
+		border: var(--border);
+		color: var(--text);
+		padding: 6px;
+		box-sizing: border-box;
+		display: block;
+	}
+    .stat-line { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+
+    /* КАСТОМНЫЙ СКРОЛЛБАР ТЕРМИНАЛА */
+    ::-webkit-scrollbar {
+        width: 8px;
+        background: #000;
+    }
+    ::-webkit-scrollbar-track {
+        background: #050505;
+        border-left: 1px solid #112211;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--text);
+        border: 1px solid #000;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #4da64d;
+    }
+	
+	/* Общий стиль для всех чекбоксов в терминале */
+	input[type="checkbox"].l-chk, 
+	.limb-chk-row input[type="checkbox"] {
+		appearance: none;
+		-webkit-appearance: none;
+		width: 16px;
+		height: 16px;
+		background-color: #000;         /* Черный фон */
+		border: 1px solid var(--text);  /* Зеленая рамка */
+		cursor: pointer;
+		position: relative;
+		vertical-align: middle;
+		margin-right: 5px;
+	}
+
+	/* Состояние, когда галочка поставлена */
+	input[type="checkbox"].l-chk:checked, 
+	.limb-chk-row input[type="checkbox"]:checked {
+		background-color: var(--text);  /* Заливается зеленым цветом */
+	}
+
+	/* Опционально: эффект "крестика" или точки внутри при наведении */
+	input[type="checkbox"].l-chk:hover {
+		box-shadow: 0 0 5px var(--text);
+	}
+	
+	.skill-row input, 
+	.skill-sub input {
+		text-align: center;
+	}
+	
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	/* Убирает стрелки в Firefox */
+	input[type=number] {
+		-moz-appearance: textfield;
+		text-align: center; /* Сразу центрируем текст */
+	}
+
+    /* Поддержка Firefox */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--text) #000;
+    }
+</style>
+</head>
+<body>
+
+<div class="crt-overlay"></div>
+
+<div class="grid-main">
+    <div>
+        <div class="section">
+            <span class="section-title">BARRAGEUR 1990</span>
+            <input type="text" id="name" placeholder="ИМЯ">
+            <input type="text" id="callsign" placeholder="ПОЗЫВНОЙ">
+			<input type="text" id="dob" placeholder="ДАТА РОЖДЕНИЯ">
+            <input type="text" id="hw" placeholder="РОСТ">
+			<input type="text" id="hw" placeholder="ВЕС">
+            <input type="text" id="nation" placeholder="НАЦИОНАЛЬНОСТЬ">
+            <textarea id="marks" placeholder="ОСОБЫЕ ПРИМЕТЫ"></textarea>
+        </div>
+
+        <div class="section">
+            <span class="section-title">СОСТОЯНИЕ</span>
+            <div class="stat-line">Порог ранений: <input type="number" id="w_thresh" value="20" oninput="calc()"> = <b id="eff-w-thresh">20</b></div>
+            <div class="stat-line">ОНЗ: <input type="number" id="nerve_cur" value="40"> / <input type="number" id="nerve_max" value="40"></div>
+            <div class="stat-line">ОМ: <input type="number" id="moral_cur" value="10"> / <input type="number" id="moral_max" value="10"></div>
+            
+            <div style="margin-top:10px; border-top:1px solid #112211; padding-top:8px;">
+                <span class="bio-label">Психологические расстройства</span>
+                <input type="text" placeholder="...">
+                <input type="text" placeholder="...">
+                <input type="text" placeholder="...">
+            </div>
+            <div style="margin-top:5px;">
+                <span class="bio-label">Фобии</span>
+                <input type="text" placeholder="...">
+                <input type="text" placeholder="...">
+                <input type="text" placeholder="...">
+                <input type="text" placeholder="...">
+                <input type="text" placeholder="...">
+            </div>
+
+            <div style="margin-top:15px">Ранения: <button onclick="addInjury()">+</button></div>
+            <div id="injury-list" style="margin-top:8px"></div>
+            <div style="margin-top:8px; font-weight:bold">ОБЩИЙ ШТРАФ: <span id="total-penalty">0</span></div>
+        </div>
+	
+		<div class="section"> 
+			<span class="section-title">ИМПЛАНТЫ</span> 
+			<span class="bio-label">Глаза</span> 
+				<input type="text" placeholder="Модель"> 
+				<textarea class="l-feat-single" placeholder="Особенности" rows="1"></textarea>
+			<span class="bio-label">Гнездо и предохранитель</span> 
+				<input type="text" placeholder="Гнездо">
+				<input type="text" placeholder="Предохранитель"> 				
+				<textarea class="l-feat-single" placeholder="Особенности" rows="1"></textarea>
+			<span class="bio-label">Системы</span> 
+				<input type="text" placeholder="Тип"> 
+				<textarea class="l-feat-single" placeholder="Особенности" rows="1"></textarea>
+			<div id="limbs-container"></div> 
+		</div>
+	</div>
+
+<div>
+        <div class="section" style="box-sizing: border-box;">
+            <span class="section-title">БИОГРАФИЧЕСКИЙ ЛОГ</span>
+            
+            <div class="bio-block">
+                <span class="bio-label">Детство (Сводка)</span>
+                <input type="text" id="b_child_short" placeholder="..." style="width: 100%; box-sizing: border-box;">
+                <span class="bio-label">Подробности</span>
+                <textarea id="b_child_full" rows="3" style="width: 100%; box-sizing: border-box; resize: vertical; display: block;"></textarea>
+            </div>
+
+            <div class="bio-block">
+                <span class="bio-label">Подростковый возраст (Сводка)</span>
+                <input type="text" id="b_teen_short" placeholder="..." style="width: 100%; box-sizing: border-box;">
+                <span class="bio-label">Подробности</span>
+                <textarea id="b_teen_full" rows="3" style="width: 100%; box-sizing: border-box; resize: vertical; display: block;"></textarea>
+            </div>
+
+            <div class="bio-block">
+                <span class="bio-label">События 1986 (Сводка)</span>
+                <input type="text" id="b_1986_short" placeholder="..." style="width: 100%; box-sizing: border-box;">
+                <span class="bio-label">Подробности</span>
+                <textarea id="b_1986_full" rows="3" style="width: 100%; box-sizing: border-box; resize: vertical; display: block;"></textarea>
+            </div>
+
+            <div class="bio-block">
+                <span class="bio-label">Взрослая жизнь (Сводка)</span>
+                <input type="text" id="b_adult_short" placeholder="..." style="width: 100%; box-sizing: border-box;">
+                <span class="bio-label">Подробности</span>
+                <textarea id="b_adult_full" rows="3" style="width: 100%; box-sizing: border-box; resize: vertical; display: block;"></textarea>
+            </div>
+
+            <div class="bio-block">
+                <span class="bio-label">Актуальная сводка</span>
+                <input type="text" id="b_curr_short" placeholder="..." style="width: 100%; box-sizing: border-box;">
+                <span class="bio-label">Подробности</span>
+                <textarea id="b_curr_full" rows="3" style="width: 100%; box-sizing: border-box; resize: vertical; display: block;"></textarea>
+            </div>
+
+            <!-- БЛОК СВЯЗЕЙ -->
+            <div style="margin-top:10px; border-top: 1px solid #112211; padding-top:8px;">
+                <div style="color: var(--text); font-size: 14px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; border-left: 3px solid var(--text); padding-left: 8px;">
+                    Социальные связи (0-5)
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 55px; gap: 4px; margin-bottom: 10px;">
+                    <div class="bio-label" style="margin:0; align-self:center;">Этнические связи</div>
+                    <input type="number" min="0" max="5" value="0" oninput="if(value>5)value=5;if(value<0)value=0" style="margin:0; font-size: 15px !important; width: 100%;">
+                    
+                    <div class="bio-label" style="margin:0; align-self:center;">Уличные связи</div>
+                    <input type="number" min="0" max="5" value="0" oninput="if(value>5)value=5;if(value<0)value=0" style="margin:0; font-size: 15px !important; width: 100%;">
+                    
+                    <div class="bio-label" style="margin:0; align-self:center;">Армейские / Наемничьи</div>
+                    <input type="number" min="0" max="5" value="0" oninput="if(value>5)value=5;if(value<0)value=0" style="margin:0; font-size: 15px !important; width: 100%;">
+                    
+                    <div class="bio-label" style="margin:0; align-self:center;">Корпоративные связи</div>
+                    <input type="number" min="0" max="5" value="0" oninput="if(value>5)value=5;if(value<0)value=0" style="margin:0; font-size: 15px !important; width: 100%;">
+                    
+                    <div class="bio-label" style="margin:0; align-self:center;">Правительственные связи</div>
+                    <input type="number" min="0" max="5" value="0" oninput="if(value>5)value=5;if(value<0)value=0" style="margin:0; font-size: 15px !important; width: 100%;">
+                </div>
+
+                <div style="color: var(--text); font-size: 14px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; border-left: 3px solid var(--text); padding-left: 8px;">
+                    Личные связи (0-3)
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <input type="text" placeholder="Контакт 1" style="flex: 1; margin:0; box-sizing: border-box;">
+                        <input type="number" min="0" max="3" value="0" oninput="if(value>3)value=3;if(value<0)value=0" style="width: 55px; margin:0; font-size: 15px !important; text-align: center;">
+                    </div>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <input type="text" placeholder="Контакт 2" style="flex: 1; margin:0; box-sizing: border-box;">
+                        <input type="number" min="0" max="3" value="0" oninput="if(value>3)value=3;if(value<0)value=0" style="width: 55px; margin:0; font-size: 15px !important; text-align: center;">
+                    </div>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <input type="text" placeholder="Контакт 3" style="flex: 1; margin:0; box-sizing: border-box;">
+                        <input type="number" min="0" max="3" value="0" oninput="if(value>3)value=3;if(value<0)value=0" style="width: 55px; margin:0; font-size: 15px !important; text-align: center;">
+                    </div>
+                </div>
+            </div>
+        </div>
+<div class="section" style="box-sizing: border-box;">
+    <!-- Заголовок -->
+    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--text); padding:4px 8px; margin-bottom:8px;">
+        <span style="font-weight:bold; color:var(--bg); text-transform:uppercase; font-size: 15px;">СНАРЯЖЕНИЕ</span>
+        <div style="color:var(--bg); font-weight:bold; font-size:15px; display:flex; align-items:center; gap:5px;">
+            ЛИМИТ ОС: <input type="number" id="gear-limit" value="100" oninput="calcGear()" style="width:60px; margin:0; background:var(--bg); border:1px solid #000; color:var(--text); height: 22px !important; font-size: 15px !important; text-align: center;">
+        </div>
+    </div>
+    
+    <!-- Заголовки -->
+    <div style="display: flex; gap: 5px; margin-bottom: 5px; padding: 0 2px; color: #1b3d1b; font-size: 15px; text-transform: uppercase; font-weight: bold; align-items: flex-end;">
+        <div style="width: 55px; min-width: 55px; text-align: center;">Кол-во</div>
+        <div style="flex-grow: 1; text-align: center;">Наименование</div>
+        <div style="width: 140px; min-width: 140px; text-align: center; font-size: 11px; line-height: 1.1;">ХАРАКТЕРИСТИКИ</div>
+        <div style="width: 55px; min-width: 55px; text-align: center;">ОС</div>
+    </div>
+
+    <div id="gear-rows-container" style="display: flex; flex-direction: column; gap: 3px;">
+        <script>
+            // Вспомогательная функция для создания строк через JS
+            function createRow(type) {
+                let statsHtml = '';
+                if (type === 'armor') {
+                    statsHtml = `
+                        <div style="display: flex; gap: 10px; align-items: center; width: 140px; min-width: 140px; justify-content: center;">
+                            <input type="text" placeholder="КБ" style="width: 45px; margin: 0; font-size: 15px !important; height: 28px; text-align: center; border-color: #224422; text-transform: uppercase;">
+                            <input type="number" placeholder="ПП" style="width: 45px; margin: 0; font-size: 15px !important; height: 28px; text-align: center; border-color: #224422;">
+                        </div>`;
+                } else if (type === 'weapon') {
+                    statsHtml = `
+                        <div style="display: flex; gap: 10px; align-items: center; width: 140px; min-width: 140px; justify-content: center;">
+                            <input type="number" placeholder="МАГАЗИН" style="width: 100px; margin: 0; font-size: 14px !important; height: 28px; text-align: center; border-color: #224422;">
+                        </div>`;
+                } else if (type === 'ammo') {
+                    statsHtml = `
+                        <div style="display: flex; gap: 5px; align-items: center; width: 140px; min-width: 140px; justify-content: center;">
+                            <input type="text" placeholder="NP" style="width: 38px; margin: 0; font-size: 13px !important; height: 28px; text-align: center; border-color: #224422; text-transform: uppercase;">
+                            <input type="text" placeholder="AP" style="width: 38px; margin: 0; font-size: 13px !important; height: 28px; text-align: center; border-color: #224422; text-transform: uppercase;">
+                            <input type="text" placeholder="OP" style="width: 38px; margin: 0; font-size: 13px !important; height: 28px; text-align: center; border-color: #224422; text-transform: uppercase;">
+                        </div>`;
+                } else {
+                    statsHtml = `<div style="width: 140px; min-width: 140px;"></div>`;
+                }
+
+                return `
+                    <div class="gear-row" style="display: flex; gap: 5px; align-items: center;">
+                        <input type="number" class="g-count" value="1" oninput="calcGear()" style="width: 55px; min-width: 55px; margin: 0; font-size: 15px !important; height: 28px; text-align: center;">
+                        <input type="text" placeholder="..." style="flex: 1; min-width: 0; margin: 0; font-size: 15px !important; height: 28px; padding: 0 8px;">
+                        ${statsHtml}
+                        <input type="number" class="g-os" value="0" oninput="calcGear()" style="width: 55px; min-width: 55px; margin: 0; font-size: 15px !important; height: 28px; text-align: center;">
+                    </div>`;
+            }
+
+            // Рендер секций
+            for (let i = 0; i < 5; i++) document.write(createRow('armor'));
+            document.write('<div style="height: 1px; background: #1b3d1b; margin: 4px 0; opacity: 0.4;"></div>');
+            for (let i = 0; i < 3; i++) document.write(createRow('weapon'));
+            for (let i = 0; i < 2; i++) document.write(createRow('ammo'));
+            document.write('<div style="height: 1px; background: #1b3d1b; margin: 4px 0; opacity: 0.4;"></div>');
+            for (let i = 0; i < 10; i++) document.write(createRow('item'));
+        </script>
+    </div>
+
+    <!-- Итог -->
+    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 10px; padding: 8px; border-top: 1px solid #112211;">
+        <span style="font-size: 15px; font-weight: bold; color: #1b3d1b;">ОСТАТОК ОС:</span>
+        <input type="number" id="gear-res" value="100" readonly style="width: 70px; background: transparent; border: none; color: #3d8c3d; font-size: 20px !important; font-weight: bold; text-align: center; outline: none;">
+    </div>
+</div>
+
+<script>
+// Функция расчета ОС
+function calcGear() {
+    const limitField = document.getElementById('gear-limit');
+    const resField = document.getElementById('gear-res');
+    
+    if (!limitField || !resField) return;
+
+    const limit = parseFloat(limitField.value) || 0;
+    const rows = document.querySelectorAll('.gear-row');
+    let totalSpent = 0;
+
+    rows.forEach(row => {
+        const countInput = row.querySelector('.g-count');
+        const osInput = row.querySelector('.g-os');
+        
+        if (countInput && osInput) {
+            const count = parseFloat(countInput.value) || 0;
+            const os = parseFloat(osInput.value) || 0;
+            totalSpent += (count * os);
+        }
+    });
+
+    const remainder = limit - totalSpent;
+    resField.value = remainder;
+
+    // Цвет остатка
+    if (remainder < 0) {
+        resField.style.color = "#ff4444";
+    } else {
+        resField.style.color = "#3d8c3d";
+    }
+}
+
+// Запуск расчета при загрузке страницы
+document.addEventListener('DOMContentLoaded', calcGear);
+</script>
+</div>
+
+    <div>
+        <div class="section">
+            <span class="section-title">НАВЫКИ</span>
+            <div id="skills-container"></div>
+        </div>
+    </div>
+</div>
+
+<div class="pool-bar">
+    <div>ГРУППЫ: <span id="pool-group">10</span></div>
+    <div>НАВЫКИ: <span id="pool-skill">12</span></div>
+    <button onclick="saveData()">СОХРАНИТЬ</button>
+    <button onclick="document.getElementById('fileInput').click()">ЗАГРУЗИТЬ</button>
+    <input type="file" id="fileInput" style="display:none" onchange="loadData(event)">
+</div>
+
+<script>
+    let selectedCultures = [];
+
+    const skillData = [
+        { g: "ЛОВКОСТЬ", s: ["РЕАКЦИЯ", "СКРЫТНОСТЬ", "ВЗЛОМ"] },
+        { g: "ИНТЕЛЛЕКТ", s: ["ПЕРВАЯ ПОМОЩЬ", "ХИМИЯ", "ВЗРЫВЧАТКА", "ЭЛЕКТРОТЕХНИКА", "ЯЗЫКИ"] },
+        { g: "ЦИФРООР.", s: ["ХАКИНГ", "СКРИПТИНГ", "СЕТЕВОЙ АНАЛИЗ", "СЕТЕВАЯ СКРЫТНОСТЬ"] },
+        { g: "ХАРИЗМА", s: ["УБЕЖДЕНИЕ", "ТОРГ", "ЛИДЕРСТВО"] },
+        { g: "МЕТКОСТЬ", s: ["ОГНЕСТР. ОРУЖИЕ", "КРУПНОКАЛ. ОГНЕСТР.", "МЕТАТЕЛЬНОЕ"] },
+        { g: "СИЛА", s: ["РУКОПАШНЫЙ БОЙ", "БЛИЖНИЙ БОЙ", "ШТУРМОВЫЕ МЕРОПР."] },
+        { g: "ХЛАДНОКР.", s: [
+            {n: "ДОПРОС", type: "skill"}, {n: "ИНФИЛЬТРАЦИЯ", type: "skill"}, 
+            {n: "КУЛЬТУРА", type: "main"}, 
+            {n: "ЭТНИЧЕСКАЯ", type: "cult"}, {n: "УЛИЧНАЯ", type: "cult"}, {n: "АРМЕЙСКАЯ", type: "cult"}, {n: "КОРПОРАТИВНАЯ", type: "cult"}, {n: "ПРАВИТЕЛЬСТВЕННАЯ", type: "cult"}
+        ]}
+    ];
+
+    const sc = document.getElementById('skills-container');
+    skillData.forEach(g => {
+        let h = `<div class="skill-group"><strong>${g.g}</strong> <input type="number" class="g-val" value="1" min="1" max="5" oninput="validate(this); calc()">`;
+        g.s.forEach(item => {
+            const name = typeof item === 'string' ? item : item.n;
+            const type = item.type || 'skill';
+            
+            if (type === 'main') {
+                h += `<div class="skill-row"><span>${name}</span><input type="number" id="main-culture" class="s-val" value="1" min="1" max="5" oninput="validate(this); calc()"></div>`;
+            } else if (type === 'cult') {
+                h += `<div class="skill-sub">
+                        <input type="checkbox" class="cult-chk" onchange="toggleCulture(this)">
+                        <span>${name}</span>
+                        <span class="cult-val"></span>
+                      </div>`;
+            } else {
+                const hasDesc = (name === "РУКОПАШНЫЙ БОЙ" || name === "БЛИЖНИЙ БОЙ");
+                h += `<div class="skill-row"><span>${name}</span><input type="number" class="s-val" value="1" min="1" max="5" oninput="validate(this); calc()"><input type="text" placeholder="${hasDesc ? 'Школа...' : ''}" class="s-desc"></div>`;
+            }
+        });
+        h += `</div>`;
+        sc.innerHTML += h;
+    });
+
+	const limbsData = [ 
+		{ n: "ЛЕВАЯ РУКА", s: ["Кисть", "Запястье", "Плечо"] }, 
+		{ n: "ПРАВАЯ РУКА", s: ["Кисть", "Запястье", "Плечо"] }, 
+		{ n: "ЛЕВАЯ НОГА", s: ["Ступня", "Голень", "Бедро"] }, 
+		{ n: "ПРАВАЯ НОГА", s: ["Ступня", "Голень", "Бедро"] } 
+	]; 
+
+	const lc = document.getElementById('limbs-container'); 
+	lc.innerHTML = ''; 
+
+	limbsData.forEach(l => { 
+		// Создаем только список чекбоксов
+		let sh = l.s.map(sec => ` 
+			<div class="limb-chk-row">
+				<input type="checkbox" class="l-chk" onchange="calc()"> 
+				<span>${sec}</span>
+			</div>`).join(''); 
+
+		// Добавляем блок конечности: название + чекбоксы + ОДНА модель + ОДНИ особенности
+		lc.innerHTML += `
+			<div class="limb-box">
+				<b>${l.n}</b>
+				<div class="limb-sectors-list">${sh}</div>
+				<div class="limb-footer-inputs">
+					<input type="text" class="l-desc" placeholder="Модель"> 
+					<textarea class="l-feat-single" placeholder="Особенности импланта" rows="2"></textarea>
+				</div>
+			</div>`; 
+	});
+
+    function toggleCulture(el) {
+        if(el.checked) {
+            if(selectedCultures.length >= 2) {
+                el.checked = false;
+                alert("Можно выбрать не более 2 культур");
+                return;
+            }
+            selectedCultures.push(el);
+        } else {
+            selectedCultures = selectedCultures.filter(item => item !== el);
+        }
+        calc();
+    }
+
+    function calc() {
+        const cultureVal = parseInt(document.getElementById('main-culture').value) || 1;
+        document.querySelectorAll('.cult-val').forEach(el => el.innerText = "");
+        selectedCultures.forEach((el, index) => {
+            const valDisplay = el.parentElement.querySelector('.cult-val');
+            const val = (index === 0) ? cultureVal : Math.max(1, cultureVal - 2);
+            valDisplay.innerText = `[${val}]`;
+        });
+
+        let sP = 0; document.querySelectorAll('.s-val').forEach(i => sP += (parseInt(i.value || 1)-1));
+        let gP = 0; document.querySelectorAll('.g-val').forEach(i => gP += (parseInt(i.value || 1)-1));
+        let sectors = document.querySelectorAll('.l-chk:checked').length;
+        document.getElementById('pool-skill').innerText = (12 + sectors) - sP;
+        document.getElementById('pool-group').innerText = 10 - gP;
+        document.getElementById('eff-w-thresh').innerText = (parseInt(document.getElementById('w_thresh').value) || 0) - sectors;
+        
+        let pen = 0;
+        document.querySelectorAll('.injury-row').forEach(row => pen += parseInt(row.querySelector('.inj-type').value) + parseInt(row.querySelector('.inj-sev').value));
+        document.getElementById('total-penalty').innerText = pen;
+    }
+
+    function validate(el) { el.value = Math.min(5, Math.max(1, el.value)); }
+
+    function addInjury() {
+        let d = document.createElement('div'); d.className = 'injury-row';
+        d.innerHTML = `
+            <select class="inj-type" onchange="calc()"><option value="1">Поверхн.</option><option value="1">Сквозн.</option><option value="2">Ожог</option><option value="3">Проник.</option></select>
+            <select class="inj-sev" onchange="calc()"><option value="1">Легкое</option><option value="2">Средн.</option><option value="3">Тяж.</option><option value="4">Травм.</option></select>
+            <input type="text" placeholder="Локация">
+            <button onclick="this.parentElement.remove(); calc()">X</button>`;
+        document.getElementById('injury-list').appendChild(d);
+    }
+
+    function saveData() {
+        const data = {
+            inputs: Array.from(document.querySelectorAll('input, textarea')).map(i => ({v: i.value})),
+            checks: Array.from(document.querySelectorAll('.l-chk')).map(i => i.checked),
+            cultChecks: Array.from(document.querySelectorAll('.cult-chk')).map(i => i.checked),
+            cultOrder: selectedCultures.map(el => Array.from(document.querySelectorAll('.cult-chk')).indexOf(el)),
+            injuries: Array.from(document.querySelectorAll('.injury-row')).map(r => ({
+                t: r.querySelector('.inj-type').value, s: r.querySelector('.inj-sev').value, d: r.querySelector('input').value
+            }))
+        };
+        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)])); a.download = (document.getElementById('name').value || "char") + ".json"; a.click();
+    }
+
+    function loadData(e) {
+        const reader = new FileReader(); reader.onload = (ev) => {
+            const d = JSON.parse(ev.target.result);
+            const allInp = document.querySelectorAll('input, textarea');
+            d.inputs.forEach((input, idx) => { if(allInp[idx]) allInp[idx].value = input.v; });
+            document.querySelectorAll('.l-chk').forEach((c, i) => c.checked = d.checks[i]);
+            
+            const allCults = document.querySelectorAll('.cult-chk');
+            selectedCultures = [];
+            if(d.cultOrder) {
+                d.cultOrder.forEach(idx => {
+                    allCults[idx].checked = true;
+                    selectedCultures.push(allCults[idx]);
+                });
+            }
+
+            document.getElementById('injury-list').innerHTML = '';
+            d.injuries.forEach(inj => {
+                addInjury(); const r = document.querySelectorAll('.injury-row'); const row = r[r.length-1];
+                row.querySelector('.inj-type').value = inj.t; row.querySelector('.inj-sev').value = inj.s; row.querySelector('input').value = inj.d;
+            });
+            calc();
+        }; reader.readAsText(e.target.files[0]);
+    }
+    calc();
+</script>
+</body>
+</html>
